@@ -18,7 +18,7 @@ import pagamentoRoutes from './src/api/routes/pagamento.routes.js';
 import verificaEmailRoutes from './src/api/routes/verify.routes.js';
 import gabaritoRoutes from './src/api/routes/gabarito.routes.js';
 import usuariosRoutes from './src/api/routes/usuario.routes.js';
-
+import rateLimit from 'express-rate-limit';
 // (Aqui você importaria outras rotas, ex: usuario.routes.js.js)
 import webhookRoutes from "./src/api/routes/webhook.routes.js";
 
@@ -38,6 +38,16 @@ app.use('/api/stripe', webhookRoutes)
 app.use(cors({
   origin: 'https://sabia.leonilso.com.br'
 }));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Aplica o rate limiter para todas as rotas
+app.use(limiter);
 
 // Middleware nativo do Express para parsear requisições com body JSON
 app.use(express.json());

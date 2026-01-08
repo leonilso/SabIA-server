@@ -245,7 +245,7 @@ class PdfService {
   async desenharQR(doc, prova, pagina, gabarito) {
     try {
       // 1. Defina a URL base do seu sistema de correção/validação
-      const baseUrl = "http://sabia.leonilso.com.br:8080/corrigir";
+      const baseUrl = `${process.env.FRONT_URL}/corrigir`;
 
 
       // 3. Monta a URL com os parâmetros de busca (Query Params)
@@ -257,7 +257,7 @@ class PdfService {
       });
 
       const urlFinal = `${baseUrl}?${params.toString()}`;
-      console.log(urlFinal)
+      // console.log(urlFinal)
 
       // 4. Gera o QR Code a partir da URL
       const qrBuffer = await QRCode.toBuffer(urlFinal, { 
