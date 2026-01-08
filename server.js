@@ -35,7 +35,9 @@ app.use('/api/stripe', webhookRoutes)
 
 // 5. Configuração de Middlewares Globais
 // Habilita o Cross-Origin Resource Sharing (essencial para APIs)
-app.use(cors());
+app.use(cors({
+  origin: 'https://sabia.leonilso.com.br'
+}));
 
 // Middleware nativo do Express para parsear requisições com body JSON
 app.use(express.json());
