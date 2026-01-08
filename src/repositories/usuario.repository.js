@@ -10,7 +10,6 @@ static async findByCPF(cpf) {
 }
 
 static async findById(id) {
-  console.log(id)
   const [rows] = await db.query(
     'SELECT * FROM Usuario WHERE ID = ?',
     [id]

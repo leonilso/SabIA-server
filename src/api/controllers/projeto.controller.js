@@ -50,7 +50,6 @@ class ProjetoController {
       const userId = req.usuario.id;
       const userIdReal = await MapPublicId.usuario(userId)
       const {provas} = req.body
-      console.log(projetoId)
       await CrudPDF.apagarPdfsProjeto(projetoId);
       await ProjetoService.salvarProvasProjeto(
         projetoIdReal,

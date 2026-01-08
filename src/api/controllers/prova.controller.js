@@ -30,13 +30,10 @@ const imprimirGabarito = req.query.imprimirGabarito === "true";
       }
       dadosInput.imprimirGabarito = imprimirGabarito
       for(let i = 0; i < 2; i ++){
-        
-        console.log(dadosInput.imprimirGabarito)
         const pdfGerado = await provaService.orquestrarGeracaoProvas(dadosInput);
 
 
         await CrudPDF.salvarPdfProjeto(projetoId, dadosInput.imprimirGabarito, pdfGerado);
-        console.log(!imprimirGabarito)
         dadosInput.imprimirGabarito = !imprimirGabarito
 
         
@@ -67,7 +64,6 @@ const imprimirGabarito = req.query.imprimirGabarito === "true";
   }
   async pegarProvas(req, res, next) {
     try {
-      console.log("estou sendo chamado")
       const projetoId = req.params.id;
 
 const imprimirGabarito = req.query.imprimirGabarito === "true";
@@ -109,7 +105,6 @@ const imprimirGabarito = req.query.imprimirGabarito === "true";
     }
   }
   async me(req, res, next) {
-    console.log("fui chamado")
   try {
     const userId =  req.usuario.id;
     const realUserId = await MapPublicId.usuario(userId)

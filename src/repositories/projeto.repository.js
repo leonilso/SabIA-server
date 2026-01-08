@@ -225,7 +225,6 @@ ORDER BY
   }
 
 static async saveTestById(projetoId, userId, provas) {
-  console.log(provas)
   const conn = await db.getConnection();
 
   try {
@@ -444,7 +443,6 @@ static async saveTestById(projetoId, userId, provas) {
 
   static async create(dados, public_id) {
     const { userId, disciplina, turma, questoes, qtdQuestoes, qtdProvas, temas } = dados;
-    console.log(dados)
     const connection = await db.getConnection();
     try {
       await connection.beginTransaction();
@@ -491,7 +489,6 @@ static async saveTestById(projetoId, userId, provas) {
 
   static async editById(projetoId, dados) {
     const { disciplina, turma, qtdQuestoes, questoes, qtdProvas, temas } = dados;
-    console.log(questoes)
     const connection = await db.getConnection();
 
     try {

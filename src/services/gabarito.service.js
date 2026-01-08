@@ -23,8 +23,6 @@ static async corrigirGabarito({
     pagina
   );
 
-  // console.log(linhas);
-
   if (!linhas.length) {
     throw new Error('Nenhuma questão encontrada para essa página');
   }
@@ -88,8 +86,6 @@ static async corrigirGabarito({
 
     const detectada = detected[q.idQuestao] ?? null;
     const {correta, conteudo} = await GabaritoRepository.getRespostaCorretaPorQuestoes([q.idQuestao]);
-    console.log(correta);
-    console.log(detectada)
     let acertou
     if(q.tipo == 'objetiva'){
       acertou =
@@ -97,10 +93,8 @@ static async corrigirGabarito({
       correta &&
       String(detectada).toUpperCase() === String(correta[q.idQuestao]).toUpperCase();
     } else if (q.tipo == 'associativa'){
-      // console.log(correta[q.idQuestao])
       let soma = 0
       for(let i = 1; i < Object.keys(correta[q.idQuestao]).length + 1; i++){
-        // console.log(correta[q.idQuestao][i] == detectada[i])
         if(correta[q.idQuestao][i] == detectada[i]){
           soma++
         }
@@ -158,7 +152,6 @@ static async detectAnswers(imagePath, questoesArr) {
       imagePath,
       questoes: questoesArr
     };
-    // console.log(payload.questoes)
     const py = spawn('python', [
       path.resolve(__dirname, '../omr/omr_processor.py'),
       JSON.stringify(payload)

@@ -44,7 +44,6 @@ static async getPdfPath(projetoId, imprimirGabarito) {
 }
 
 static async apagarPdfsProjeto(projetoId) {
-  console.log(`Tentei apagar o pdf ${projetoId}`)
   const dir = path.join(
     process.env.STORAGE_PATH,
     "pdfs",

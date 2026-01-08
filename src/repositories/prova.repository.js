@@ -11,7 +11,6 @@ class ProvaRepository {
    */
 
   async selecionarQuestaoPorIdProjeto(ID_projeto) {
-    // console.log(ID_projeto)
     try {
       const [rows] = await db.execute(
         `
@@ -33,7 +32,6 @@ class ProvaRepository {
       );
 
 
-      // console.log(rows)
       if (rows.length === 0) return null;
 
       // ===============================
@@ -64,7 +62,6 @@ class ProvaRepository {
               questao.respostas = JSON.parse(row.conteudo_resposta);
               break
             case "objetiva":
-              // console.log(row)
               if (row.ID_resposta_correta == row.resposta_id) {
                 const [respostas] = await db.execute(
                   `SELECT conteudo_resposta, ID FROM respostas WHERE ID_questao = ?`,
@@ -403,7 +400,6 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
       // 3. Execução (assumindo que 'db' é sua conexão/pool do mysql2)
       const [result] = await db.query(sql, [values]);
 
-      console.log(`Sucesso: ${result.affectedRows} linhas processadas.`);
 
     } catch (error) {
       console.error('Erro na transação do banco:', error);

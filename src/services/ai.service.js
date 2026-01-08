@@ -96,7 +96,6 @@ ${promptUsuario}
         );
       }
 
-      console.log(jsonResponse)
 
       return jsonResponse.questoes;
     } catch (error) {
