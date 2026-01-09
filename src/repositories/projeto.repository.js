@@ -442,7 +442,7 @@ static async saveTestById(projetoId, userId, provas) {
   }
 
   static async create(dados, public_id) {
-    const { userId, disciplina, TURMA, questoes, qtdQuestoes, qtdProvas, temas } = dados;
+    const { userId, disciplina, turma, questoes, qtdQuestoes, qtdProvas, temas } = dados;
     const connection = await db.getConnection();
     try {
       await connection.beginTransaction();
@@ -450,7 +450,7 @@ static async saveTestById(projetoId, userId, provas) {
       const [resProjeto] = await connection.execute(
         `INSERT INTO PROJETOS (ID_usuario, Disciplina, ID_turma, QTD_questoes, QTD_provas, public_id, questoes_descritivas, questoes_objetivas, questoes_associativas) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, disciplina, TURMA, qtdQuestoes, qtdProvas, public_id, questoes.descritiva, questoes.objetiva, questoes.associativa]
+        [userId, disciplina, turma, qtdQuestoes, qtdProvas, public_id, questoes.descritiva, questoes.objetiva, questoes.associativa]
       );
 
       const projetoId = resProjeto.insertId;
@@ -488,7 +488,7 @@ static async saveTestById(projetoId, userId, provas) {
   }
 
   static async editById(projetoId, dados) {
-    const { disciplina, TURMA, qtdQuestoes, questoes, qtdProvas, temas } = dados;
+    const { disciplina, turma, qtdQuestoes, questoes, qtdProvas, temas } = dados;
     const connection = await db.getConnection();
 
     try {
@@ -497,7 +497,7 @@ static async saveTestById(projetoId, userId, provas) {
       await connection.execute(
         `UPDATE PROJETOS SET Disciplina = ?, ID_turma = ?, QTD_questoes = ?, QTD_provas = ?, questoes_descritivas = ?, questoes_objetivas = ?, questoes_associativas = ?
         WHERE ID = ?`,
-        [disciplina, TURMA, qtdQuestoes, qtdProvas, questoes.descritiva, questoes.objetiva, questoes.associativa, projetoId]
+        [disciplina, turma, qtdQuestoes, qtdProvas, questoes.descritiva, questoes.objetiva, questoes.associativa, projetoId]
       );
 
       await connection.execute(
