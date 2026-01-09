@@ -577,7 +577,7 @@ static async saveTestById(projetoId, userId, provas) {
 
       // 3️⃣ Inserir aluno
       await connection.execute(
-        `INSERT INTO aluno_projeto (
+        `INSERT INTO ALUNO_PROJETO (
         ID_aluno,
         ID_projeto,
         tematica,

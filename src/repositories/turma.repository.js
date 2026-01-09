@@ -134,7 +134,7 @@ static async editarTurma(idTurma, nome, listaAlunos) {
             // 1. Deletar as associações de temas dos projetos desta turma
             // Usamos um subquery para achar os IDs dos projetos que pertencem à turma
             await connection.execute(`
-                DELETE FROM Tema_projeto 
+                DELETE FROM TEMA_PROJETO 
                 WHERE ID_projeto IN (SELECT ID FROM PROJETOS WHERE ID_turma = ?)
             `, [idTurma]);
 
