@@ -12,6 +12,9 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
+      - name: Remover git e arquivos desnecessários
+        run: rm -rf .git .github
+
       - name: Enviar arquivos para o servidor
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -19,12 +22,10 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
-          source: "./*"
+          source: "."
           target: "/var/www/sabia-api"
           overwrite: true
           exclude: |
-            .git
-            .git/**
             node_modules
             .env
 
@@ -37,5 +38,6 @@ jobs:
           port: ${{ secrets.REMOTE_PORT }}
           script: |
             cd /var/www/sabia-api
+            # É boa prática garantir que o arquivo .env existe ou copiá-lo de um .env.example se necessário
             docker compose down
             docker compose up -d --build
