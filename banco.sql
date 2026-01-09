@@ -5,7 +5,7 @@ SET GLOBAL event_scheduler = ON;
 -- =====================
 -- Usuário
 -- =====================
-CREATE TABLE Usuario (
+CREATE TABLE USUARIO (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     public_id CHAR(36) UNIQUE,
     nome VARCHAR(100) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE Usuario (
 	email_verificacao_expira DATETIME
 );
 
-CREATE TABLE Assinaturas (
+CREATE TABLE ASSINATURAS (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     plano_nome VARCHAR(50), -- Ex: 'Trimestral', 'Semestral'
@@ -26,26 +26,26 @@ CREATE TABLE Assinaturas (
     data_fim DATETIME NOT NULL,
     external_id VARCHAR(255), -- ID da transação no Stripe, Mercado Pago, etc.
     status VARCHAR(20),
-    FOREIGN KEY (usuario_id) REFERENCES Usuario(ID) ON DELETE CASCADE
+    FOREIGN KEY (usuario_id) REFERENCES USUARIO(ID) ON DELETE CASCADE
 );
 
 -- =====================
 -- Turma
 -- =====================
-CREATE TABLE Turma (
+CREATE TABLE TURMA (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     public_id CHAR(36) UNIQUE,
     nome_turma VARCHAR(50),
     ID_usuario INT,
     FOREIGN KEY (ID_usuario)
-        REFERENCES Usuario(ID)
+        REFERENCES USUARIO(ID)
         ON DELETE CASCADE
 );
 
 -- =====================
 -- Projetos
 -- =====================
-CREATE TABLE Projetos (
+CREATE TABLE PROJETOS (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     ID_usuario INT NOT NULL,
     disciplina VARCHAR(100) NOT NULL,
@@ -59,17 +59,17 @@ CREATE TABLE Projetos (
     status ENUM('rascunho', 'ativo', 'encerrado') DEFAULT 'rascunho',
     data_limite DATETIME NULL,
     FOREIGN KEY (ID_usuario)
-        REFERENCES Usuario(ID)
+        REFERENCES USUARIO(ID)
         ON DELETE CASCADE,
     FOREIGN KEY (ID_turma)
-        REFERENCES Turma(ID)
+        REFERENCES TURMA(ID)
         ON DELETE CASCADE
 );
 
 -- =====================
 -- Tema
 -- =====================
-CREATE TABLE Tema (
+CREATE TABLE TEMA (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     nome_tematica VARCHAR(100) NOT NULL
 );
@@ -77,22 +77,22 @@ CREATE TABLE Tema (
 -- =====================
 -- Tema ↔ Projeto
 -- =====================
-CREATE TABLE Tema_projeto (
+CREATE TABLE TEMA_PROJETO (
     ID_projeto INT NOT NULL,
     ID_tema INT NOT NULL,
     PRIMARY KEY (ID_projeto, ID_tema),
     FOREIGN KEY (ID_projeto)
-        REFERENCES Projetos(ID)
+        REFERENCES PROJETOS(ID)
         ON DELETE CASCADE,
     FOREIGN KEY (ID_tema)
-        REFERENCES Tema(ID)
+        REFERENCES TEMA(ID)
         ON DELETE CASCADE
 );
 
 -- =====================
 -- Questões
 -- =====================
-CREATE TABLE Questoes (
+CREATE TABLE QUESTOES (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     public_id CHAR(20) UNIQUE,
     ID_resposta_correta INT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE Questoes (
     enunciado TEXT NOT NULL,
     ID_projeto INT NOT NULL,
     FOREIGN KEY (ID_projeto)
-        REFERENCES Projetos(ID)
+        REFERENCES PROJETOS(ID)
         ON DELETE CASCADE
 );
 
@@ -110,7 +110,7 @@ CREATE TABLE GABARITO (
     ID_projeto INT,
     ID_aluno INT,
 	FOREIGN KEY (ID_projeto)
-        REFERENCES Projetos(ID)
+        REFERENCES PROJETOS(ID)
         ON DELETE CASCADE,
 	UNIQUE (ID_projeto, ID_aluno)
 );
@@ -123,7 +123,7 @@ CREATE TABLE POSICAO_GABARITO (
   pagina INT NOT NULL,
 
   FOREIGN KEY (ID_gabarito) REFERENCES GABARITO(ID) ON DELETE CASCADE,
-  FOREIGN KEY (ID_questao) REFERENCES questoes(ID) ON DELETE CASCADE
+  FOREIGN KEY (ID_questao) REFERENCES QUESTOES(ID) ON DELETE CASCADE
 );
 
 CREATE TABLE POSICAO_ALTERNATIVA (
@@ -150,26 +150,26 @@ CREATE TABLE POSICAO_ALTERNATIVA (
 -- =====================
 -- Respostas
 -- =====================
-CREATE TABLE Respostas (
+CREATE TABLE RESPOSTAS (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     ID_questao INT NOT NULL,
     conteudo_resposta TEXT NOT NULL,
     FOREIGN KEY (ID_questao)
-        REFERENCES Questoes(ID)
+        REFERENCES QUESTOES(ID)
         ON DELETE CASCADE
 );
 
 -- 🔴 Evita ciclo (Questão ↔ Resposta)
-ALTER TABLE Questoes
+ALTER TABLE QUESTOES
 ADD CONSTRAINT fk_resposta_correta
 FOREIGN KEY (ID_resposta_correta)
-REFERENCES Respostas(ID)
+REFERENCES RESPOSTAS(ID)
 ON DELETE SET NULL;
 
 ALTER TABLE POSICAO_ALTERNATIVA
 ADD CONSTRAINT fk_id_alternativa
 FOREIGN KEY (ID_alternativa)
-REFERENCES Respostas(ID)
+REFERENCES RESPOSTAS(ID)
 ON DELETE SET NULL;
 
 -- =====================
@@ -181,7 +181,7 @@ CREATE TABLE Aluno (
     email VARCHAR(75),
     nome VARCHAR(75),
     FOREIGN KEY (ID_turma)
-        REFERENCES Turma(ID)
+        REFERENCES TURMA(ID)
         ON DELETE CASCADE
 );
 
@@ -189,7 +189,7 @@ CREATE TABLE Aluno (
 -- Aluno ↔ Projeto
 -- =====================
 
-CREATE TABLE Aluno_projeto (
+CREATE TABLE ALUNO_PROJETO (
     ID_aluno INT,
     ID_projeto INT,
     tematica VARCHAR(50),
@@ -199,14 +199,14 @@ CREATE TABLE Aluno_projeto (
     dica BOOLEAN,
     auxilio_visao BOOLEAN,
     FOREIGN KEY (ID_aluno)
-        REFERENCES Aluno(ID)
+        REFERENCES ALUNO(ID)
         ON DELETE CASCADE,
     FOREIGN KEY (ID_projeto)
-        REFERENCES Projetos(ID)
+        REFERENCES PROJETOS(ID)
         ON DELETE CASCADE
 );
 
-CREATE TABLE Respostas_Alunos (
+CREATE TABLE RESPOSTAS_ALUNOS (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     ID_projeto INT NOT NULL,
     ID_aluno INT NOT NULL,
@@ -216,26 +216,26 @@ CREATE TABLE Respostas_Alunos (
     corrigida BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (ID_questao) REFERENCES Questoes(ID),
-    FOREIGN KEY (ID_projeto) REFERENCES Projetos(ID),
+    FOREIGN KEY (ID_questao) REFERENCES QUESTOES(ID),
+    FOREIGN KEY (ID_projeto) REFERENCES PROJETOS(ID),
     FOREIGN KEY (ID_aluno) REFERENCES ALUNO(ID)
 );
 
 
-ALTER TABLE questoes
+ALTER TABLE QUESTOES
 ADD CONSTRAINT fk_aluno
 	FOREIGN KEY (ID_aluno)
-        REFERENCES aluno(ID)
+        REFERENCES ALUNO(ID)
         ON DELETE CASCADE;
         
-ALTER TABLE gabarito
+ALTER TABLE GABARITO
 ADD CONSTRAINT fk_aluno_gabarito
 	FOREIGN KEY (ID_aluno)
-        REFERENCES aluno(ID)
+        REFERENCES ALUNO(ID)
         ON DELETE CASCADE;
 
 
-CREATE TABLE materiais (
+CREATE TABLE MTERIAIS (
   id INT AUTO_INCREMENT PRIMARY KEY,
 
   public_id CHAR(36) NOT NULL,
@@ -256,16 +256,16 @@ CREATE TABLE materiais (
 
   CONSTRAINT fk_materiais_projeto
     FOREIGN KEY (projeto_id)
-    REFERENCES projetos (ID)
+    REFERENCES PROJETOS (ID)
     ON DELETE CASCADE
 );
 
-CREATE TABLE pagamentos (
+CREATE TABLE PAGAMENTOS (
   id INT AUTO_INCREMENT PRIMARY KEY,
   plano_nome VARCHAR(50),
   ID_usuario INT NOT NULL,
   pago_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (ID_usuario) REFERENCES usuario (ID)
+	FOREIGN KEY (ID_usuario) REFERENCES USUARIO (ID)
 );
 
 
@@ -275,7 +275,7 @@ CREATE EVENT IF NOT EXISTS atualizar_status_assinatura
 ON SCHEDULE EVERY 1 DAY STARTS CURRENT_TIMESTAMP
 DO
 BEGIN
-    UPDATE Usuario u
+    UPDATE USUARIO u
     JOIN Assinaturas a ON a.usuario_id = u.ID
     SET u.status_assinatura = 'inativo'
     WHERE a.data_fim < NOW() AND u.status_assinatura = 'ativo';

@@ -2,9 +2,13 @@ version: "3.8"
 
 services:
   api:
-    container_name: sabia-api
     build: .
+    container_name: sabia-api
     restart: always
-    env_file: .env
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - /var/docker/sabia-api/storage:/app/storage
+
