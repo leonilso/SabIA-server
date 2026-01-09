@@ -1,11 +1,14 @@
-- name: Deploy API
-  uses: appleboy/ssh-action@master
-  with:
-    host: ${{ secrets.REMOTE_HOST }}
-    username: ${{ secrets.REMOTE_USER }}
-    key: ${{ secrets.SSH_PRIVATE_KEY }}
-    port: ${{ secrets.REMOTE_PORT }}
-    script: |
-      cd /var/www/sabia-api
-      docker compose down
+name: Deploy API
+uses: appleboy/ssh-action@master
+on:
+  push:
+    branches: [main]
+with:
+  host: ${{ secrets.REMOTE_HOST }}
+  username: ${{ secrets.REMOTE_USER }}
+  key: ${{ secrets.SSH_PRIVATE_KEY }}
+  port: ${{ secrets.REMOTE_PORT }}
+  script: |
+    cd /var/www/sabia-api
+    docker compose down
       docker compose up -d --build
