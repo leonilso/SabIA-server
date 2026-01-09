@@ -6,7 +6,7 @@ class AlunoRepository {
 
     const [projeto] = await db.execute(
       `SELECT ID_turma 
-       FROM Projetos 
+       FROM PROJETOS 
        WHERE ID = ? `,
       [id]
     );
@@ -14,7 +14,7 @@ class AlunoRepository {
 
 
     const [rowsalunos] = await db.execute(
-      "SELECT ID, nome FROM aluno WHERE ID_turma = ?",
+      "SELECT ID, nome FROM ALUNO WHERE ID_turma = ?",
       [ID_turma]
     );
 
@@ -35,8 +35,8 @@ class AlunoRepository {
         ap.questoes_associativas,
         ap.dica,
         ap.auxilio_visao
-        FROM aluno a
-        INNER JOIN aluno_projeto ap 
+        FROM ALUNO a
+        INNER JOIN ALUNO_PROJETO ap 
         ON ap.ID_aluno = a.ID
         WHERE a.ID_turma = ?
         `,
@@ -59,8 +59,8 @@ class AlunoRepository {
         ap.questoes_associativas,
         ap.dica,
         ap.auxilio_visao
-        FROM aluno a
-        INNER JOIN aluno_projeto ap 
+        FROM ALUNO a
+        INNER JOIN ALUNO_PROJETO ap 
         ON ap.ID_aluno = a.ID
         WHERE a.ID = ?
         `,

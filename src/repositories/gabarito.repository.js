@@ -262,7 +262,7 @@ class GabaritoRepository {
     FROM POSICAO_GABARITO pg
     JOIN POSICAO_ALTERNATIVA pa
       ON pa.ID_posicao_gabarito = pg.ID
-    JOIN questoes q
+    JOIN QUESTOES q
       ON q.ID = pg.ID_questao
     WHERE pg.ID_gabarito = ?
       AND pg.pagina = ?
@@ -286,7 +286,7 @@ class GabaritoRepository {
       q.ID_resposta_correta,
       pa.alternativa,
       pa.repeticao
-    FROM Questoes q
+    FROM QUESTOES q
     LEFT JOIN POSICAO_GABARITO pg 
            ON pg.ID_questao = q.ID
     LEFT JOIN POSICAO_ALTERNATIVA pa
@@ -350,7 +350,7 @@ class GabaritoRepository {
 
       await connection.execute(
         `
-        INSERT INTO Respostas_Alunos
+        INSERT INTO RESPOSTAS_ALUNOS
           (ID_projeto, ID_aluno, ID_questao, resposta, pagina)
         VALUES (?, ?, ?, ?, ?)
         `,

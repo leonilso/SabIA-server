@@ -36,13 +36,13 @@ export default class MaterialService {
     return { publicId };
   }
 
-    async findByProjetoId(projetoId) {
-    const [rows] = await db.execute(
-      `SELECT * FROM materiais WHERE projeto_id = ?`,
-      [projetoId]
-    );
-    return rows[0] || null;
-  }
+  // async findByProjetoId(projetoId) {
+  //   const [rows] = await db.execute(
+  //     `SELECT * FROM materiais WHERE projeto_id = ?`,
+  //     [projetoId]
+  //   );
+  //   return rows[0] || null;
+  // }
 
   static async fileExists(path) {
     try {

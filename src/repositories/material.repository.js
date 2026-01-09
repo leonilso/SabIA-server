@@ -14,7 +14,7 @@ export default class MaterialRepository {
 
     const [result] = await db.execute(
       `
-      INSERT INTO materiais
+      INSERT INTO MATERIAIS
       (public_id, projeto_id, nome, path_arquivo, nome_arquivo, mime_type, tamanho_bytes)
       VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
@@ -43,7 +43,7 @@ export default class MaterialRepository {
         nome_arquivo,
         mime_type,
         tamanho_bytes
-      FROM materiais
+      FROM MATERIAIS
       WHERE projeto_id = ?
       LIMIT 1
       `,
@@ -55,8 +55,8 @@ export default class MaterialRepository {
   static async findByUserId(usuarioId) {
     const [rows] = await db.execute(
       `SELECT m.*
-       FROM materiais m
-       JOIN Projetos p ON p.ID = m.projeto_id
+       FROM MATERIAIS m
+       JOIN PROJETOS p ON p.ID = m.projeto_id
        WHERE p.ID_usuario = ?`,
       [usuarioId]
     );
@@ -64,15 +64,15 @@ export default class MaterialRepository {
   }
     static async deleteByProjetoId(projetoId) {
     await db.execute(
-      `DELETE FROM materiais WHERE projeto_id = ?`,
+      `DELETE FROM MATERIAIS WHERE projeto_id = ?`,
       [projetoId]
     );
   }
   static async deleteByUserId(userId) {
     await db.execute(
       `DELETE m
-     FROM materiais m
-     JOIN Projetos p ON p.ID = m.projeto_id
+     FROM MATERIAIS m
+     JOIN PROJETOS p ON p.ID = m.projeto_id
      WHERE p.ID_usuario = ?`,
       [userId]
     );

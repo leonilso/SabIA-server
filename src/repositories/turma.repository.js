@@ -5,18 +5,18 @@ class TurmaRepository {
   static async findByUsuario(userId) {
     
     const [rows] = await db.execute(
-      "SELECT public_id as ID_turma, nome_turma, ID_usuario FROM turma WHERE ID_usuario = ?",
+      "SELECT public_id as ID_turma, nome_turma, ID_usuario FROM TURMA WHERE ID_usuario = ?",
       [userId]
     );
     return rows;
   }
   static async findById(turmaId) {
     const [rows] = await db.execute(
-      "SELECT public_id as ID_turma, nome_turma, ID_usuario FROM turma WHERE ID = ?",
+      "SELECT public_id as ID_turma, nome_turma, ID_usuario FROM TURMA WHERE ID = ?",
       [turmaId]
     );
     const [rowsalunos] = await db.execute(
-      "SELECT ID as ID_aluno, ID_turma, email, nome FROM aluno WHERE ID_turma = ?",
+      "SELECT ID as ID_aluno, ID_turma, email, nome FROM ALUNO WHERE ID_turma = ?",
       [turmaId]
     );
     const response = {
@@ -33,7 +33,7 @@ static async criarTurma(userId, nome, listaAlunos, publicId) {
 
         // 1. Inserir a Turma
         const [resultTurma] = await connection.execute(
-            "INSERT INTO turma (nome_turma, ID_usuario, public_id) VALUES (?, ?, ?)",
+            "INSERT INTO TURMA (nome_turma, ID_usuario, public_id) VALUES (?, ?, ?)",
             [nome, userId, publicId]
         );
         const newTurmaId = resultTurma.insertId;
@@ -41,7 +41,7 @@ static async criarTurma(userId, nome, listaAlunos, publicId) {
         // 2. Inserir cada aluno da lista
         for (const aluno of listaAlunos) {
             await connection.execute(
-                `INSERT INTO aluno 
+                `INSERT INTO ALUNO 
                 (ID_turma, email, nome) 
                 VALUES (?, ?, ?)`,
                 [
@@ -74,7 +74,7 @@ static async editarTurma(idTurma, nome, listaAlunos) {
 
         // 1. Atualiza a Turma (com trava de segurança)
         const [res] = await connection.execute(
-            "UPDATE turma SET nome_turma = ? WHERE ID = ?",
+            "UPDATE TURMA SET nome_turma = ? WHERE ID = ?",
             [nome, idTurma]
         );
 
@@ -86,10 +86,10 @@ static async editarTurma(idTurma, nome, listaAlunos) {
         const placeholders = listaIds.map(() => '?').join(',');
         
 
-        const query = `DELETE FROM aluno WHERE ID_turma = ? AND ID NOT IN (${placeholders})`;
+        const query = `DELETE FROM ALUNO WHERE ID_turma = ? AND ID NOT IN (${placeholders})`;
 
         if (listaIds.length === 0) {
-            await connection.execute("DELETE FROM aluno WHERE ID_turma = ?", [idTurma]);
+            await connection.execute("DELETE FROM ALUNO WHERE ID_turma = ?", [idTurma]);
         } else {
             await connection.execute(query, [idTurma, ...listaIds]);
         }
@@ -98,7 +98,7 @@ static async editarTurma(idTurma, nome, listaAlunos) {
          for (const aluno of listaAlunos) {
             if(aluno.isNew)
             await connection.execute(
-                `INSERT INTO aluno 
+                `INSERT INTO ALUNO 
                 (ID_turma, email, nome) 
                 VALUES (?, ?, ?)`,
                 [
@@ -124,7 +124,7 @@ static async editarTurma(idTurma, nome, listaAlunos) {
             await connection.beginTransaction();
 
             const [ idsProjetos ] = await connection.execute(`
-                SELECT ID FROM Projetos WHERE ID_turma = ?
+                SELECT ID FROM PROJETOS WHERE ID_turma = ?
             `, [idTurma]);
 
             idsProjetos.forEach(async (item)=>{
@@ -135,22 +135,22 @@ static async editarTurma(idTurma, nome, listaAlunos) {
             // Usamos um subquery para achar os IDs dos projetos que pertencem à turma
             await connection.execute(`
                 DELETE FROM Tema_projeto 
-                WHERE ID_projeto IN (SELECT ID FROM Projetos WHERE ID_turma = ?)
+                WHERE ID_projeto IN (SELECT ID FROM PROJETOS WHERE ID_turma = ?)
             `, [idTurma]);
 
             // 2. Deletar os projetos da turma
             await connection.execute(`
-                DELETE FROM Projetos WHERE ID_turma = ?
+                DELETE FROM PROJETOS WHERE ID_turma = ?
             `, [idTurma]);
 
             // 3. Deletar os alunos da turma
             await connection.execute(`
-                DELETE FROM aluno WHERE ID_turma = ?
+                DELETE FROM ALUNO WHERE ID_turma = ?
             `, [idTurma]);
 
             // 4. Agora sim, deletamos a turma
             const [result] = await connection.execute(
-                "DELETE FROM turma WHERE ID = ?",
+                "DELETE FROM TURMA WHERE ID = ?",
                 [idTurma]
             );
 

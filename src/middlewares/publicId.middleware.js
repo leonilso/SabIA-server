@@ -7,7 +7,7 @@ class MapPublicId {
         if (!publicId) return console.error("not found");
 
         const [rows] = await db.execute(
-            "SELECT id FROM projetos WHERE public_id = ?",
+            "SELECT id FROM PROJETOS WHERE public_id = ?",
             [publicId]
         );
 
@@ -20,7 +20,7 @@ class MapPublicId {
         if (!publicId) return console.error("not found");
 
         const [rows] = await db.execute(
-            "SELECT id FROM aluno WHERE public_id = ?",
+            "SELECT id FROM ALUNO WHERE public_id = ?",
             [publicId]
         );
 
@@ -46,7 +46,7 @@ class MapPublicId {
         if (!publicId) return console.error("not found");
 
         const [rows] = await db.execute(
-            "SELECT id FROM usuario WHERE public_id = ?",
+            "SELECT id FROM USUARIO WHERE public_id = ?",
             [publicId]
         );
 
@@ -59,7 +59,7 @@ class MapPublicId {
         if (!publicId) return console.error("not found");
 
         const [rows] = await db.execute(
-            "SELECT id FROM questoes WHERE public_id = ?",
+            "SELECT id FROM QUESTOES WHERE public_id = ?",
             [publicId]
         );
 

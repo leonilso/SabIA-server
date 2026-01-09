@@ -3,7 +3,7 @@ import { db } from '../config/database.js';
 class UsuarioRepository {
 static async findByCPF(cpf) {
   const [rows] = await db.query(
-    'SELECT * FROM Usuario WHERE cpf = ?',
+    'SELECT * FROM USUARIO WHERE cpf = ?',
     [cpf]
   );
   return rows[0];
@@ -11,7 +11,7 @@ static async findByCPF(cpf) {
 
 static async findById(id) {
   const [rows] = await db.query(
-    'SELECT * FROM Usuario WHERE ID = ?',
+    'SELECT * FROM USUARIO WHERE ID = ?',
     [id]
   );
   return rows[0];
@@ -19,7 +19,7 @@ static async findById(id) {
 
 static async deletar(userId) {
     const [result] = await db.execute(
-      "DELETE FROM Usuario WHERE ID = ?",
+      "DELETE FROM USUARIO WHERE ID = ?",
       [userId]
     );
 
@@ -28,7 +28,7 @@ static async deletar(userId) {
 
   static async alterarSenha(userId, senhaHash) {
     const [result] = await db.execute(
-      "UPDATE Usuario SET senha = ? WHERE ID = ?",
+      "UPDATE USUARIO SET senha = ? WHERE ID = ?",
       [senhaHash, userId]
     );
 
@@ -37,14 +37,14 @@ static async deletar(userId) {
 
 static async findByEmail(email) {
   const [rows] = await db.query(
-    'SELECT * FROM Usuario WHERE email = ?',
+    'SELECT * FROM USUARIO WHERE email = ?',
     [email]
   );
   return rows[0];
 }
 static async deleteByEmail(email) {
   const [rows] = await db.query(
-    'DELETE FROM Usuario WHERE email = ?',
+    'DELETE FROM USUARIO WHERE email = ?',
     [email]
   );
   return "ususário deletado";
@@ -52,7 +52,7 @@ static async deleteByEmail(email) {
 
 static async findByEmailToken(token) {
   const [rows] = await db.query(
-    'SELECT * FROM Usuario WHERE email_verificacao_token = ?',
+    'SELECT * FROM USUARIO WHERE email_verificacao_token = ?',
     [token]
   );
   return rows[0];
@@ -69,7 +69,7 @@ static async update(user, info_emails) {
 
 static async create({ nome, email, senha, email_verificado = null, email_verificacao_token = null, email_verificacao_expira = null, publicId}) {
   const [row] = await db.query(
-    `INSERT INTO Usuario (nome, email, senha, email_verificado, email_verificacao_token, email_verificacao_expira, public_id)
+    `INSERT INTO USUARIO (nome, email, senha, email_verificado, email_verificacao_token, email_verificacao_expira, public_id)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [nome, email, senha, email_verificado, email_verificacao_token, email_verificacao_expira, publicId]
   );

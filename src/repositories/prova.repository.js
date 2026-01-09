@@ -23,8 +23,8 @@ class ProvaRepository {
         q.ID_resposta_correta,
         r.ID  AS resposta_id,
         r.conteudo_resposta
-      FROM Questoes q
-      LEFT JOIN Respostas r ON r.ID_questao = q.ID
+      FROM QUESTOES q
+      LEFT JOIN RESPOSTAS r ON r.ID_questao = q.ID
       WHERE q.ID_projeto = ?
       ORDER BY q.ID, r.ID
       `,
@@ -122,11 +122,11 @@ class ProvaRepository {
 FROM GABARITO g
 JOIN POSICAO_GABARITO pg 
   ON pg.ID_gabarito = g.ID
-JOIN Questoes q 
+JOIN QUESTOES q 
   ON q.ID = pg.ID_questao
 LEFT JOIN POSICAO_ALTERNATIVA pa 
   ON pa.ID_posicao_gabarito = pg.ID
-LEFT JOIN Respostas r
+LEFT JOIN RESPOSTAS r
   ON r.ID = pa.ID_alternativa
 
 WHERE g.ID = ?
@@ -219,7 +219,7 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
       for (const prova of provasGeradas) {
         const ID_aluno = prova.aluno.ID_aluno ? prova.aluno.ID_aluno : null
         const [existe] = await connection.execute(
-          'SELECT ID_aluno FROM Questoes WHERE ID_aluno = (?)',
+          'SELECT ID_aluno FROM QUESTOES WHERE ID_aluno = (?)',
           [ID_aluno]
         );
         if (existe.length > 0) {
@@ -228,12 +228,12 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
           // 'prova.questoes' é o array de JSONs que veio da IA
           for (const questaoIA of prova.questoes) {
             const [qResult] = await connection.execute(
-              'INSERT INTO Questoes (enunciado, ID_projeto, tipo, ID_aluno) VALUES (?, ?, ?, ?)',
+              'INSERT INTO QUESTOES (enunciado, ID_projeto, tipo, ID_aluno) VALUES (?, ?, ?, ?)',
               [questaoIA.pergunta, projetoId, questaoIA.tipo, ID_aluno]
             );
             const questaoId = qResult.insertId;
 
-            // 4. Inserir Respostas (Lógica complexa aqui)
+            // 4. Inserir RESPOSTAS (Lógica complexa aqui)
             let idRespostaCorreta = null;
 
             // Exemplo de lógica para tratar os diferentes tipos de resposta da IA
@@ -243,7 +243,7 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
                 // A IA PRECISA INFORMAR QUAL É A CORRETA!
                 // Assumindo que a IA envia: { "pergunta": "...", "respostas": [...], "correta": 0 }
                 const [rResult] = await connection.execute(
-                  'INSERT INTO Respostas (ID_questao, conteudo_resposta) VALUES (?, ?)',
+                  'INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta) VALUES (?, ?)',
                   [questaoId, respostaTexto]
                 );
                 if (index === questaoIA.correta) {
@@ -253,14 +253,14 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
             } else if (questaoIA.tipo == "descritiva") {
               // Descritiva (armazenamos a resposta 'gabarito')
               const [rResult] = await connection.execute(
-                'INSERT INTO Respostas (ID_questao, conteudo_resposta) VALUES (?, ?)',
+                'INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta) VALUES (?, ?)',
                 [questaoId, questaoIA.respostas]
               );
               idRespostaCorreta = rResult.insertId;
             } else if (questaoIA.tipo == "associativa") {
               // Associativa (armazenamos como JSON string)
               const [rResult] = await connection.execute(
-                'INSERT INTO Respostas (ID_questao, conteudo_resposta) VALUES (?, ?)',
+                'INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta) VALUES (?, ?)',
                 [questaoId, JSON.stringify(questaoIA.respostas)]
               );
               idRespostaCorreta = rResult.insertId; // A própria associação é a "resposta"
@@ -269,7 +269,7 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
             // 5. Atualizar a Questão com a Resposta Correta
             if (idRespostaCorreta) {
               await connection.execute(
-                'UPDATE Questoes SET ID_resposta_correta = ? WHERE ID = ?',
+                'UPDATE QUESTOES SET ID_resposta_correta = ? WHERE ID = ?',
                 [idRespostaCorreta, questaoId]
               );
             }
@@ -299,12 +299,12 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
 
       for (const questaoIA of questoesJson) {
         const [qResult] = await connection.execute(
-          'INSERT INTO Questoes (enunciado, ID_projeto, tipo, ID_aluno) VALUES (?, ?, ?, ?)',
+          'INSERT INTO QUESTOES (enunciado, ID_projeto, tipo, ID_aluno) VALUES (?, ?, ?, ?)',
           [questaoIA.pergunta, projetoId, questaoIA.tipo, ID_aluno]
         );
         const questaoId = qResult.insertId;
 
-        // 4. Inserir Respostas (Lógica complexa aqui)
+        // 4. Inserir RESPOSTAS (Lógica complexa aqui)
         let idRespostaCorreta = null;
 
         // Exemplo de lógica para tratar os diferentes tipos de resposta da IA
@@ -314,7 +314,7 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
             // A IA PRECISA INFORMAR QUAL É A CORRETA!
             // Assumindo que a IA envia: { "pergunta": "...", "respostas": [...], "correta": 0 }
             const [rResult] = await connection.execute(
-              'INSERT INTO Respostas (ID_questao, conteudo_resposta) VALUES (?, ?)',
+              'INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta) VALUES (?, ?)',
               [questaoId, respostaTexto]
             );
             if (index === questaoIA.correta) {
@@ -324,14 +324,14 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
         } else if (questaoIA.tipo == "descritiva") {
           // Descritiva (armazenamos a resposta 'gabarito')
           const [rResult] = await connection.execute(
-            'INSERT INTO Respostas (ID_questao, conteudo_resposta) VALUES (?, ?)',
+            'INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta) VALUES (?, ?)',
             [questaoId, questaoIA.respostas]
           );
           idRespostaCorreta = rResult.insertId;
         } else if (questaoIA.tipo == "associativa") {
           // Associativa (armazenamos como JSON string)
           const [rResult] = await connection.execute(
-            'INSERT INTO Respostas (ID_questao, conteudo_resposta) VALUES (?, ?)',
+            'INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta) VALUES (?, ?)',
             [questaoId, JSON.stringify(questaoIA.respostas)]
           );
           idRespostaCorreta = rResult.insertId; // A própria associação é a "resposta"
@@ -340,7 +340,7 @@ ORDER BY pg.numero_questao, pa.alternativa, pa.repeticao;`,
         // 5. Atualizar a Questão com a Resposta Correta
         if (idRespostaCorreta) {
           await connection.execute(
-            'UPDATE Questoes SET ID_resposta_correta = ? WHERE ID = ?',
+            'UPDATE QUESTOES SET ID_resposta_correta = ? WHERE ID = ?',
             [idRespostaCorreta, questaoId]
           );
         }

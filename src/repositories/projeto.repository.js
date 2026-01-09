@@ -138,11 +138,11 @@ class ProjetoRepository {
           t.nome_turma, 
           t.public_id as ID_turma,
             GROUP_CONCAT(te.nome_tematica) AS temas
-        FROM Projetos p
-        JOIN turma t ON p.ID_turma = t.ID
-        LEFT JOIN usuario u ON p.ID_usuario = u.ID
-        LEFT JOIN Tema_projeto tp ON p.ID = tp.ID_projeto
-        LEFT JOIN Tema te ON tp.ID_tema = te.ID
+        FROM PROJETOS p
+        JOIN TURMA t ON p.ID_turma = t.ID
+        LEFT JOIN USUARIO u ON p.ID_usuario = u.ID
+        LEFT JOIN TEMA_PROJETO tp ON p.ID = tp.ID_projeto
+        LEFT JOIN TEMA te ON tp.ID_tema = te.ID
         WHERE p.ID_turma = ?
           AND t.ID_usuario = ?
         GROUP BY p.ID`,
@@ -184,23 +184,23 @@ SELECT
   pa.repeticao,
   pa.correta
 
-FROM Projetos p
+FROM PROJETOS p
 
-INNER JOIN Turma t ON t.ID = p.ID_turma
+INNER JOIN TURMA t ON t.ID = p.ID_turma
 
 INNER JOIN GABARITO g ON g.ID_projeto = p.ID
 
-LEFT JOIN Aluno a ON a.ID = g.ID_aluno
+LEFT JOIN ALUNO a ON a.ID = g.ID_aluno
 
 LEFT JOIN POSICAO_GABARITO pg 
   ON pg.ID_gabarito = g.ID
 
-INNER JOIN Questoes q ON q.ID = pg.ID_questao
+INNER JOIN QUESTOES q ON q.ID = pg.ID_questao
 
 LEFT JOIN POSICAO_ALTERNATIVA pa 
   ON pa.ID_posicao_gabarito = pg.ID
 
-LEFT JOIN Respostas r 
+LEFT JOIN RESPOSTAS r 
   ON (
     (q.tipo <> 'descritiva' AND r.ID = pa.ID_alternativa)
     OR
@@ -233,16 +233,16 @@ static async saveTestById(projetoId, userId, provas) {
     // 1. Limpa tudo do projeto
     await conn.execute(
       `
-      DELETE FROM Respostas
+      DELETE FROM RESPOSTAS
       WHERE ID_questao IN (
-        SELECT ID FROM Questoes WHERE ID_projeto = ?
+        SELECT ID FROM QUESTOES WHERE ID_projeto = ?
       )
       `,
       [projetoId]
     );
 
     await conn.execute(
-      `DELETE FROM Questoes WHERE ID_projeto = ?`,
+      `DELETE FROM QUESTOES WHERE ID_projeto = ?`,
       [projetoId]
     );
 
@@ -259,7 +259,7 @@ static async saveTestById(projetoId, userId, provas) {
         // INSERE QUESTÃO
         const [qResult] = await conn.execute(
           `
-          INSERT INTO Questoes (ID_aluno, tipo, enunciado, ID_projeto)
+          INSERT INTO QUESTOES (ID_aluno, tipo, enunciado, ID_projeto)
           VALUES (?, ?, ?, ?)
           `,
           [idAluno, questao.tipo, questao.enunciado, projetoId]
@@ -272,7 +272,7 @@ static async saveTestById(projetoId, userId, provas) {
         if (questao.tipo === "descritiva") {
           const [r] = await conn.execute(
             `
-            INSERT INTO Respostas (ID_questao, conteudo_resposta)
+            INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta)
             VALUES (?, ?)
             `,
             [questaoId, questao.descritiva.resposta_correta]
@@ -285,7 +285,7 @@ static async saveTestById(projetoId, userId, provas) {
           for (const alt of questao.objetiva.alternativas) {
             const [r] = await conn.execute(
               `
-              INSERT INTO Respostas (ID_questao, conteudo_resposta)
+              INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta)
               VALUES (?, ?)
               `,
               [questaoId, alt.conteudo]
@@ -301,7 +301,7 @@ static async saveTestById(projetoId, userId, provas) {
         if (questao.tipo === "associativa") {
           const [r] = await conn.execute(
             `
-            INSERT INTO Respostas (ID_questao, conteudo_resposta)
+            INSERT INTO RESPOSTAS (ID_questao, conteudo_resposta)
             VALUES (?, ?)
             `,
             [questaoId, JSON.stringify(questao.associativa.resposta)]
@@ -312,7 +312,7 @@ static async saveTestById(projetoId, userId, provas) {
         // ATUALIZA resposta correta
         await conn.execute(
           `
-          UPDATE Questoes
+          UPDATE QUESTOES
           SET ID_resposta_correta = ?
           WHERE ID = ?
           `,
@@ -346,11 +346,11 @@ static async saveTestById(projetoId, userId, provas) {
           t.nome_turma, 
           t.public_id as ID_turma,
           GROUP_CONCAT(te.nome_tematica) AS temas
-      FROM Projetos p
-      JOIN turma t ON p.ID_turma = t.ID
-      LEFT JOIN usuario u ON p.ID_usuario = u.ID
-      LEFT JOIN Tema_projeto tp ON p.ID = tp.ID_projeto
-      LEFT JOIN Tema te ON tp.ID_tema = te.ID
+      FROM PROJETOS p
+      JOIN TURMA t ON p.ID_turma = t.ID
+      LEFT JOIN USUARIO u ON p.ID_usuario = u.ID
+      LEFT JOIN TEMA_PROJETO tp ON p.ID = tp.ID_projeto
+      LEFT JOIN TEMA te ON tp.ID_tema = te.ID
       WHERE p.ID_usuario = ?
       GROUP BY p.ID`,
       [userId]
@@ -372,11 +372,11 @@ static async saveTestById(projetoId, userId, provas) {
           t.nome_turma, 
           t.public_id as ID_turma,
           GROUP_CONCAT(te.nome_tematica) AS temas
-      FROM Projetos p
-      JOIN turma t ON p.ID_turma = t.ID
-      LEFT JOIN usuario u ON p.ID_usuario = u.ID
-      LEFT JOIN Tema_projeto tp ON p.ID = tp.ID_projeto
-      LEFT JOIN Tema te ON tp.ID_tema = te.ID
+      FROM PROJETOS p
+      JOIN TURMA t ON p.ID_turma = t.ID
+      LEFT JOIN USUARIO u ON p.ID_usuario = u.ID
+      LEFT JOIN TEMA_PROJETO tp ON p.ID = tp.ID_projeto
+      LEFT JOIN TEMA te ON tp.ID_tema = te.ID
       WHERE p.ID = ?
       GROUP BY p.ID`,
       [projetoId]
@@ -400,10 +400,10 @@ static async saveTestById(projetoId, userId, provas) {
           t.nome_turma, 
           t.ID as ID_turma,
           GROUP_CONCAT(te.nome_tematica) AS temas
-      FROM Projetos p
-      JOIN turma t ON p.ID_turma = t.ID
-      LEFT JOIN Tema_projeto tp ON p.ID = tp.ID_projeto
-      LEFT JOIN Tema te ON tp.ID_tema = te.ID
+      FROM PROJETOS p
+      JOIN TURMA t ON p.ID_turma = t.ID
+      LEFT JOIN TEMA_PROJETO tp ON p.ID = tp.ID_projeto
+      LEFT JOIN TEMA te ON tp.ID_tema = te.ID
       WHERE p.ID = ?
       GROUP BY p.ID`,
       [projetoId]
@@ -427,11 +427,11 @@ static async saveTestById(projetoId, userId, provas) {
           t.nome_turma, 
           t.public_id as ID_turma,
           GROUP_CONCAT(te.nome_tematica) AS temas
-      FROM Projetos p
-      JOIN turma t ON p.ID_turma = t.ID
-      LEFT JOIN usuario u ON p.ID_usuario = u.ID
-      LEFT JOIN Tema_projeto tp ON p.ID = tp.ID_projeto
-      LEFT JOIN Tema te ON tp.ID_tema = te.ID
+      FROM PROJETOS p
+      JOIN TURMA t ON p.ID_turma = t.ID
+      LEFT JOIN USUARIO u ON p.ID_usuario = u.ID
+      LEFT JOIN TEMA_PROJETO tp ON p.ID = tp.ID_projeto
+      LEFT JOIN TEMA te ON tp.ID_tema = te.ID
       WHERE p.public_id = ?
       GROUP BY p.ID`,
       [projetoId]
@@ -442,34 +442,34 @@ static async saveTestById(projetoId, userId, provas) {
   }
 
   static async create(dados, public_id) {
-    const { userId, disciplina, turma, questoes, qtdQuestoes, qtdProvas, temas } = dados;
+    const { userId, disciplina, TURMA, questoes, qtdQuestoes, qtdProvas, temas } = dados;
     const connection = await db.getConnection();
     try {
       await connection.beginTransaction();
 
       const [resProjeto] = await connection.execute(
-        `INSERT INTO Projetos (ID_usuario, Disciplina, ID_turma, QTD_questoes, QTD_provas, public_id, questoes_descritivas, questoes_objetivas, questoes_associativas) 
+        `INSERT INTO PROJETOS (ID_usuario, Disciplina, ID_turma, QTD_questoes, QTD_provas, public_id, questoes_descritivas, questoes_objetivas, questoes_associativas) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, disciplina, turma, qtdQuestoes, qtdProvas, public_id, questoes.descritiva, questoes.objetiva, questoes.associativa]
+        [userId, disciplina, TURMA, qtdQuestoes, qtdProvas, public_id, questoes.descritiva, questoes.objetiva, questoes.associativa]
       );
 
       const projetoId = resProjeto.insertId;
 
       for (const nomeTema of temas) {
         await connection.execute(
-          `INSERT IGNORE INTO Tema (nome_tematica) VALUES (?)`,
+          `INSERT IGNORE INTO TEMA (nome_tematica) VALUES (?)`,
           [nomeTema]
         );
 
         const [resTema] = await connection.execute(
-          `SELECT ID FROM Tema WHERE nome_tematica = ?`,
+          `SELECT ID FROM TEMA WHERE nome_tematica = ?`,
           [nomeTema]
         );
 
         const temaId = resTema[0].ID;
 
         await connection.execute(
-          `INSERT INTO Tema_projeto (ID_projeto, ID_tema) VALUES (?, ?)`,
+          `INSERT INTO TEMA_PROJETO (ID_projeto, ID_tema) VALUES (?, ?)`,
           [projetoId, temaId]
         );
       }
@@ -488,20 +488,20 @@ static async saveTestById(projetoId, userId, provas) {
   }
 
   static async editById(projetoId, dados) {
-    const { disciplina, turma, qtdQuestoes, questoes, qtdProvas, temas } = dados;
+    const { disciplina, TURMA, qtdQuestoes, questoes, qtdProvas, temas } = dados;
     const connection = await db.getConnection();
 
     try {
       await connection.beginTransaction();
 
       await connection.execute(
-        `UPDATE Projetos SET Disciplina = ?, ID_turma = ?, QTD_questoes = ?, QTD_provas = ?, questoes_descritivas = ?, questoes_objetivas = ?, questoes_associativas = ?
+        `UPDATE PROJETOS SET Disciplina = ?, ID_turma = ?, QTD_questoes = ?, QTD_provas = ?, questoes_descritivas = ?, questoes_objetivas = ?, questoes_associativas = ?
         WHERE ID = ?`,
-        [disciplina, turma, qtdQuestoes, qtdProvas, questoes.descritiva, questoes.objetiva, questoes.associativa, projetoId]
+        [disciplina, TURMA, qtdQuestoes, qtdProvas, questoes.descritiva, questoes.objetiva, questoes.associativa, projetoId]
       );
 
       await connection.execute(
-        `DELETE FROM Tema_projeto WHERE ID_projeto = ?`,
+        `DELETE FROM TEMA_PROJETO WHERE ID_projeto = ?`,
         [projetoId]
       );
 
@@ -510,25 +510,25 @@ static async saveTestById(projetoId, userId, provas) {
         [projetoId]
       );
       await connection.execute(
-        `DELETE FROM questoes WHERE ID_projeto = ?`,
+        `DELETE FROM QUESTOES WHERE ID_projeto = ?`,
         [projetoId]
       );
 
       for (const nomeTema of temas) {
         await connection.execute(
-          `INSERT IGNORE INTO Tema (nome_tematica) VALUES (?)`,
+          `INSERT IGNORE INTO TEMA (nome_tematica) VALUES (?)`,
           [nomeTema]
         );
 
         const [resTema] = await connection.execute(
-          `SELECT ID FROM Tema WHERE nome_tematica = ?`,
+          `SELECT ID FROM TEMA WHERE nome_tematica = ?`,
           [nomeTema]
         );
 
         const temaId = resTema[0].ID;
 
         await connection.execute(
-          `INSERT INTO Tema_projeto (ID_projeto, ID_tema) VALUES (?, ?)`,
+          `INSERT INTO TEMA_PROJETO (ID_projeto, ID_tema) VALUES (?, ?)`,
           [projetoId, temaId]
         );
       }
@@ -556,7 +556,7 @@ static async saveTestById(projetoId, userId, provas) {
       // 1️⃣ Buscar projeto
       const [projeto] = await connection.execute(
         `SELECT ID, QTD_questoes 
-       FROM Projetos 
+       FROM PROJETOS 
        WHERE ID = ? `,
         [projetoId]
       );
@@ -613,7 +613,7 @@ static async saveTestById(projetoId, userId, provas) {
   static async pegarIdsPelaTurma(turmaId){
     try {
       const [result] = await db.execute(
-        `SELECT public_id FROM Projetos WHERE ID_turma = ?`,
+        `SELECT public_id FROM PROJETOS WHERE ID_turma = ?`,
         [turmaId]
       );
       return result
@@ -626,7 +626,7 @@ static async saveTestById(projetoId, userId, provas) {
   static async pegarIdsPeloUser(userId){
     try {
       const [result] = await db.execute(
-        `SELECT public_id FROM Projetos WHERE ID_usuario = ?`,
+        `SELECT public_id FROM PROJETOS WHERE ID_usuario = ?`,
         [userId]
       );
       return result
@@ -639,7 +639,7 @@ static async saveTestById(projetoId, userId, provas) {
     static async pegarIdsReaisPeloUser(userId){
     try {
       const [result] = await db.execute(
-        `SELECT ID FROM Projetos WHERE ID_usuario = ?`,
+        `SELECT ID FROM PROJETOS WHERE ID_usuario = ?`,
         [userId]
       );
       return result
@@ -656,7 +656,7 @@ static async saveTestById(projetoId, userId, provas) {
       await connection.beginTransaction();
 
       const [result] = await connection.execute(
-        `DELETE FROM Projetos WHERE ID = ?`,
+        `DELETE FROM PROJETOS WHERE ID = ?`,
         [projetoId]
       );
 

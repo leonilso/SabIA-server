@@ -10,14 +10,14 @@ import { db } from "../config/database.js"
   }) {
     await db.execute(
       `
-      UPDATE Assinaturas SET 
+      UPDATE ASSINATURAS SET 
       plano_nome = ?, data_fim = ?, provas_restantes = ?, external_id = ?, status = ?, data_inicio = NOW() WHERE usuario_id = ?
       `,
       [planoNome, dataFim, null, externalId, status, usuarioId]
     );
     await db.execute(
       `
-      INSERT pagamentos (
+      INSERT PAGAMENTOS (
       plano_nome, ID_usuario) VALUES (?, ?)
       `,
       [planoNome, usuarioId]
@@ -26,35 +26,35 @@ import { db } from "../config/database.js"
 
   static async atualizarStatusUsuario(usuarioId, status) {
     await db.execute(
-      `UPDATE Usuario SET status_assinatura = ? WHERE ID = ?`,
+      `UPDATE USUARIO SET status_assinatura = ? WHERE ID = ?`,
       [status, usuarioId]
     );
   }
 
   static async buscarUsuarioPorId(id) {
     const [rows] = await db.execute(
-      `SELECT * FROM Usuario WHERE ID = ?`,
+      `SELECT * FROM USUARIO WHERE ID = ?`,
       [id]
     );
     return rows[0];
   }
   static async verificarAssinatura(id) {
     const [rows] = await db.execute(
-      `SELECT data_fim FROM assinaturas WHERE usuario_id = ?`,
+      `SELECT data_fim FROM ASSINATURAS WHERE usuario_id = ?`,
       [id]
     );
     return rows[0].data_fim;
   }
   static async verificarAssinaturaCompleta(id) {
     const [rows] = await db.execute(
-      `SELECT * FROM assinaturas WHERE usuario_id = ?`,
+      `SELECT * FROM ASSINATURAS WHERE usuario_id = ?`,
       [id]
     );
     return rows[0];
   }
   static async reduzirProva(id) {
     const [rows] = await db.execute(
-      `UPDATE Assinaturas
+      `UPDATE ASSINATURAS
         SET provas_restantes =
             CASE
                 WHEN provas_restantes IS NULL THEN NULL
