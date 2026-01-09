@@ -1,13 +1,36 @@
-name: Deploy API
+name: Deploy API via Docker
+
 on:
   push:
     branches: [main]
-with:
-  host: ${{ secrets.REMOTE_HOST }}
-  username: ${{ secrets.REMOTE_USER }}
-  key: ${{ secrets.SSH_PRIVATE_KEY }}
-  port: ${{ secrets.REMOTE_PORT }}
-  script: |
-    cd /var/www/sabia-api
-    docker compose down
-      docker compose up -d --build
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Enviar arquivos para o servidor
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          source: "."
+          target: "/var/www/sabia-api"
+          rm: true
+
+      - name: Subir container Docker no servidor
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            cd /var/www/sabia-api
+            docker compose down
+            docker compose up -d --build
