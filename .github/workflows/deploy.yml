@@ -22,6 +22,11 @@ jobs:
           source: "./*"
           target: "/var/www/sabia-api"
           overwrite: true
+          exclude: |
+            .git
+            .git/**
+            node_modules
+            .env
 
       - name: Subir container Docker no servidor
         uses: appleboy/ssh-action@v1.0.3
