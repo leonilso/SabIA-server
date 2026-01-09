@@ -15,6 +15,13 @@ import { db } from "../config/database.js"
       `,
       [planoNome, dataFim, null, externalId, status, usuarioId]
     );
+    await db.execute(
+      `
+      INSERT pagamentos (
+      plano_nome, ID_usuario) VALUES (?, ?)
+      `,
+      [planoNome, usuarioId]
+    );
   }
 
   static async atualizarStatusUsuario(usuarioId, status) {

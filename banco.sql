@@ -260,6 +260,15 @@ CREATE TABLE materiais (
     ON DELETE CASCADE
 );
 
+CREATE TABLE pagamentos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  plano_nome VARCHAR(50),
+  ID_usuario INT NOT NULL,
+  pago_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (ID_usuario) REFERENCES usuario (ID)
+);
+
+
 DELIMITER $$
 
 CREATE EVENT IF NOT EXISTS atualizar_status_assinatura

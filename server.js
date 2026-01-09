@@ -36,7 +36,7 @@ app.use('/api/stripe', webhookRoutes)
 // 5. Configuração de Middlewares Globais
 // Habilita o Cross-Origin Resource Sharing (essencial para APIs)
 app.use(cors({
-  origin: 'https://sabia.leonilso.com.br'
+  origin: process.env.FRONT_URL
 }));
 
 const limiter = rateLimit({
