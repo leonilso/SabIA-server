@@ -21,7 +21,7 @@ jobs:
           port: ${{ secrets.REMOTE_PORT }}
           source: "."
           target: "/var/www/sabia-api"
-          rm: true
+          overwrite: true
 
       - name: Subir container Docker no servidor
         uses: appleboy/ssh-action@v1.0.3
