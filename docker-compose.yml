@@ -4,7 +4,6 @@ services:
   api:
     build: .
     container_name: sabia-api
-    restart: always
     ports:
       - "3000:3000"
     env_file:
