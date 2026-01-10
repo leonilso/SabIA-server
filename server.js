@@ -6,6 +6,7 @@ dotenv.config();
 // 2. Importações principais
 import express from 'express';
 import cors from 'cors';
+import helmet from "helmet";
 
 // 3. Importação dos Módulos da Aplicação
 import errorHandler from "./src/middlewares/errorHandler.js";
@@ -30,6 +31,8 @@ import webhookRoutes from "./src/api/routes/webhook.routes.js";
 // 4. Inicialização do App Express
 const app = express();
 
+app.use(helmet());
+
 // O webhook da stripe se embaraça com o express.json
 app.use('/api/stripe', webhookRoutes)
 
@@ -48,6 +51,16 @@ const limiter = rateLimit({
 
 // Aplica o rate limiter para todas as rotas
 app.use(limiter);
+
+app.disable('x-powered-by');
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+  );
+  next();
+});
 
 // Middleware nativo do Express para parsear requisições com body JSON
 app.use(express.json());
