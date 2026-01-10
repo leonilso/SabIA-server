@@ -15,7 +15,18 @@ router.post(
 // );
 
 router.use(AuthMiddleware.authenticate);
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Apenas PDF é permitido'), false);
+    }
+    cb(null, true);
+  }
+});
 
 // GET /turmas/:id/projetos
 router.get(

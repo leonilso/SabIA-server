@@ -192,6 +192,7 @@ class ProjetoController {
   static async enviarAluno(req, res) {
     try {
       const { id, questoes, tema, adaptacoes} = req.body;
+      await new Promise(r => setTimeout(r, 500));
 
 
       const projetoId = req.params.id

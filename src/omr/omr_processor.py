@@ -3,7 +3,6 @@ import numpy as np
 import json
 import sys
 import os
-from plyer import notification
 
 
 

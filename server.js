@@ -54,19 +54,19 @@ app.use(limiter);
 
 app.disable('x-powered-by');
 
-app.use((req, res, next) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
-  );
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader(
+//     "Content-Security-Policy",
+//     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+//   );
+//   next();
+// });
 
 // Middleware nativo do Express para parsear requisições com body JSON
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Middleware nativo do Express para parsear requisições 'urlencoded' (formulários)
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 6. Rota "Health Check" (Boa prática)
 // Uma rota simples para verificar se a API está online
