@@ -64,7 +64,7 @@ class ProvaRepository {
             case "objetiva":
               if (row.ID_resposta_correta == row.resposta_id) {
                 const [respostas] = await db.execute(
-                  `SELECT conteudo_resposta, ID FROM respostas WHERE ID_questao = ?`,
+                  `SELECT conteudo_resposta, ID FROM RESPOSTAS WHERE ID_questao = ?`,
                   [questao.id]
                 );
                 const listaRespostas = respostas.map(item => item.conteudo_resposta);
