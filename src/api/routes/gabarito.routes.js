@@ -1,11 +1,14 @@
 import express from 'express';
 import multer from 'multer';
-const router = express.Router();
 import GabaritoController from '../controllers/gabarito.controller.js';
+import AuthMiddleware from "../../middlewares/auth.middleware.js";
 
-const upload = multer({ dest: '/tmp/uploads' }); // ajuste a pasta conforme seu ambiente
+const router = express.Router();
+router.use(AuthMiddleware.authenticate);
 
-// rota: POST /gabarito/corrigir
+
+const upload = multer({ dest: '/tmp/uploads' });
+
 router.post('/corrigir', upload.single('imagem'), GabaritoController.corrigir);
 
 export default router;

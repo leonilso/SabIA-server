@@ -16,6 +16,13 @@ export default class PagamentoController {
           mensal: "price_1Snq3d0ifycyGQkM75VXR1Dt"
       }
 
+      // Ids de teste
+      // const ids = {
+      //     semestral: "price_1SmPadGSoAdE1itzuhd34HeD",
+      //     trimestral: "price_1SmPYhGSoAdE1itz4h0JY3Mr",
+      //     mensal: "price_1SmPKwGSoAdE1itzSO2I1MHH"
+      // }
+
     
       const id = ids[code]
 

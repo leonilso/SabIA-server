@@ -86,8 +86,8 @@ const imprimirGabarito = req.query.imprimirGabarito === "true";
       );
 
       if (!fs.existsSync(filePathEnviar)) {
-  return res.status(404).json({ error: "PDF não encontrado" });
-}
+        return res.status(404).json({ error: "PDF não encontrado" });
+      }
 
 
         res.setHeader("Content-Type", "application/pdf");
