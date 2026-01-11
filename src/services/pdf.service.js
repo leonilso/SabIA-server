@@ -4,13 +4,13 @@ import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
 import provaRepository from '../repositories/prova.repository.js';
 import GabaritoRepository from '../repositories/gabarito.repository.js';
-import seedrandom  from "seedrandom";
+import seedrandom from "seedrandom";
 
 // Dimensões para normalização (Escala do Python)
 const OMR_WIDTH = 800;
 const OMR_HEIGHT = 1100;
 // Dimensões padrão do PDFKit (A4 em pontos)
-const PDF_WIDTH = 595.28; 
+const PDF_WIDTH = 595.28;
 const PDF_HEIGHT = 841.89;
 
 class PdfService {
@@ -66,11 +66,11 @@ class PdfService {
           for (const questao of prova.questoes) {
             const { idRealIdProva, respostaEsperada, alternativaId } = this.adicionarQuestao(doc, questao, questaoIndex++, fontSize);
             mapeamento.push(idRealIdProva);
-            respostasEsperadas = { ...respostasEsperadas, ...respostaEsperada};
-            alternativasIds = { ...alternativasIds, ...alternativaId};
+            respostasEsperadas = { ...respostasEsperadas, ...respostaEsperada };
+            alternativasIds = { ...alternativasIds, ...alternativaId };
           }
 
-            await this.adicionarCartaoResposta(doc, prova, mapeamento, respostasEsperadas, alternativasIds, imprimirGabarito);
+          await this.adicionarCartaoResposta(doc, prova, mapeamento, respostasEsperadas, alternativasIds, imprimirGabarito);
         }
 
         // Finaliza o documento (isso dispara o evento 'end')
@@ -149,7 +149,7 @@ class PdfService {
       const opcoes = ['A', 'B', 'C', 'D', 'E']; // Suporta até 5 alternativas
       questao.respostas.forEach((resposta, i) => {
         doc.text(`( ${opcoes[i]} ) ${resposta}`);
-        if(i==questao.correta){
+        if (i == questao.correta) {
           respostaEsperada[questaoId] = opcoes[i];
         }
         alternativaID[questaoId] = alternativaID[questaoId] || []
@@ -172,67 +172,115 @@ class PdfService {
       // CENÁRIO 3: Associativa (Gabarito é um objeto)
     } else if (typeof questao.respostas === 'object' && questao.respostas !== null) {
       const opcoes = ['A', 'B', 'C', 'D', 'E'];
-      doc.moveDown(fontSize * 0.06);
+      doc.moveDown(0.5);
 
       const coluna1 = Object.keys(questao.respostas);
       const coluna2 = Object.values(questao.respostas);
-      
+
       const rng = seedrandom(questaoId);
-      // Embaralha a coluna 2 para o exercício fazer sentido
       const coluna2Embaralhada = coluna2
         .map(value => ({ value, sort: rng() }))
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value);
 
+      const meioPagina = 300;
+      const margemEsquerda = 70;
+      const larguraColuna = meioPagina - margemEsquerda - 10;
 
-      const meioPagina = 320;
-      let yInicial = doc.y;
-
-      // 1. Calcular a altura total que o bloco vai ocupar
-      // (Isso assume que cada linha tem uma altura fixa ou calculável)
-      const alturaEstimadaLinha = doc.currentLineHeight(); // ou um valor fixo como 15
-      const alturaTotalBloco = coluna1.length * alturaEstimadaLinha;
-
-      // 2. Verificar se ultrapassa o limite da página (ex: 750 pontos)
-      if (yInicial + alturaTotalBloco > doc.page.height - doc.page.margins.bottom) {
-        doc.addPage();
-        yInicial = doc.y; // Reseta para o topo da nova página
-      }
-
-      // 3. Agora executa o loop com a garantia de que caberá (ou quebrará de forma controlada)
       for (let i = 0; i < coluna1.length; i++) {
-        // Importante: atualizar o yInicial para o y atual do doc caso tenha havido quebra automática
-        if (doc.y < yInicial) {
-          yInicial = doc.y;
+        const textoEsq = `(${i + 1}) ${coluna1[i]}`;
+        const textoDir = `(${opcoes[i]}) ${coluna2Embaralhada[i]}`;
+
+        // Calcula a altura real de cada coluna para esta linha específica
+        const alturaEsq = doc.heightOfString(textoEsq, { width: larguraColuna });
+        const alturaDir = doc.heightOfString(textoDir, { width: 200 }); // largura aproximada coluna 2
+        const alturaLinha = Math.max(alturaEsq, alturaDir) + 5;
+
+        // Verifica se a linha atual cabe na página
+        if (doc.y + alturaLinha > doc.page.height - doc.page.margins.bottom) {
+          doc.addPage();
+          // Ao adicionar página, o doc.y reseta para o topo da margem automaticamente
         }
 
-        doc.text(`(${i + 1}) ${coluna1[i]}`, 70, yInicial, { width: meioPagina - 20, align: 'left' });
-        let pos1 = doc.y;
+        const yAtual = doc.y;
 
-        doc.text(`(${opcoes[i]}) ${coluna2Embaralhada[i]}`, meioPagina, yInicial);
-        let pos2 = doc.y;
+        // Renderiza a coluna 1
+        doc.text(textoEsq, margemEsquerda, yAtual, { width: larguraColuna, align: 'left' });
 
-        respostaEsperada[questaoId] = respostaEsperada[questaoId] || {}
-        respostaEsperada[questaoId][i + 1] = opcoes[coluna2Embaralhada.indexOf(coluna2[i])]
-        alternativaID[questaoId] = [respostaEsperada[questaoId], questao.idResposta]
-        
+        // Renderiza a coluna 2 (usando o mesmo Y para alinhar horizontalmente)
+        doc.text(textoDir, meioPagina, yAtual, { width: 250, align: 'left' });
 
-        // Define o y da próxima linha baseado no maior crescimento
-        yInicial = Math.max(pos1, pos2);
+        // Move o cursor para o final da maior coluna para a próxima iteração
+        doc.y = yAtual + alturaLinha;
+
+        // Mapeamento do gabarito
+        respostaEsperada[questaoId] = respostaEsperada[questaoId] || {};
+        respostaEsperada[questaoId][i + 1] = opcoes[coluna2Embaralhada.indexOf(coluna2[i])];
+        alternativaID[questaoId] = [respostaEsperada[questaoId], questao.idResposta];
       }
-      
+
+      // const opcoes = ['A', 'B', 'C', 'D', 'E'];
+      // doc.moveDown(fontSize * 0.06);
+
+      // const coluna1 = Object.keys(questao.respostas);
+      // const coluna2 = Object.values(questao.respostas);
+
+      // const rng = seedrandom(questaoId);
+      // // Embaralha a coluna 2 para o exercício fazer sentido
+      // const coluna2Embaralhada = coluna2
+      //   .map(value => ({ value, sort: rng() }))
+      //   .sort((a, b) => a.sort - b.sort)
+      //   .map(({ value }) => value);
+
+
+      // const meioPagina = 320;
+      // let yInicial = doc.y;
+
+      // // 1. Calcular a altura total que o bloco vai ocupar
+      // // (Isso assume que cada linha tem uma altura fixa ou calculável)
+      // const alturaEstimadaLinha = doc.currentLineHeight(); // ou um valor fixo como 15
+      // const alturaTotalBloco = coluna1.length * alturaEstimadaLinha;
+
+      // // 2. Verificar se ultrapassa o limite da página (ex: 750 pontos)
+      // if (yInicial + alturaTotalBloco > doc.page.height - doc.page.margins.bottom) {
+      //   doc.addPage();
+      //   yInicial = doc.y; // Reseta para o topo da nova página
+      // }
+
+      // // 3. Agora executa o loop com a garantia de que caberá (ou quebrará de forma controlada)
+      // for (let i = 0; i < coluna1.length; i++) {
+      //   // Importante: atualizar o yInicial para o y atual do doc caso tenha havido quebra automática
+      //   if (doc.y < yInicial) {
+      //     yInicial = doc.y;
+      //   }
+
+      //   doc.text(`(${i + 1}) ${coluna1[i]}`, 70, yInicial, { width: meioPagina - 20, align: 'left' });
+      //   let pos1 = doc.y;
+
+      //   doc.text(`(${opcoes[i]}) ${coluna2Embaralhada[i]}`, meioPagina, yInicial);
+      //   let pos2 = doc.y;
+
+      //   respostaEsperada[questaoId] = respostaEsperada[questaoId] || {}
+      //   respostaEsperada[questaoId][i + 1] = opcoes[coluna2Embaralhada.indexOf(coluna2[i])]
+      //   alternativaID[questaoId] = [respostaEsperada[questaoId], questao.idResposta]
+
+
+      //   // Define o y da próxima linha baseado no maior crescimento
+      //   yInicial = Math.max(pos1, pos2);
+      // }
+
     }
 
     doc.moveDown(fontSize * 0.06); // Espaço entre as questões
     // doc.moveTo(doc.y)
-    const idRealIdProva = {idQuestao: questao.id, idProva: index}
-    return {idRealIdProva: idRealIdProva, respostaEsperada: respostaEsperada, alternativaId: alternativaID}
+    const idRealIdProva = { idQuestao: questao.id, idProva: index }
+    return { idRealIdProva: idRealIdProva, respostaEsperada: respostaEsperada, alternativaId: alternativaID }
   }
   desenharAncoras(doc) {
     const size = 30;
     const m = 20;
     const w = doc.page.width;
-    
+
     const h = doc.page.height;
 
     doc.rect(m, m, size, size).fill('black');
@@ -260,7 +308,7 @@ class PdfService {
       // console.log(urlFinal)
 
       // 4. Gera o QR Code a partir da URL
-      const qrBuffer = await QRCode.toBuffer(urlFinal, { 
+      const qrBuffer = await QRCode.toBuffer(urlFinal, {
         type: 'png',
         errorCorrectionLevel: 'L', // Nível 'L' é ideal para URLs longas
         margin: 2
@@ -280,226 +328,226 @@ class PdfService {
   }
 
   async adicionarCartaoResposta(doc, prova, mapeamento, respostasEsperadas, alternativasIds, imprimirGabarito) {
-    if(imprimirGabarito){
+    if (imprimirGabarito) {
 
 
-    doc.addPage();
-    const mapa = Object.fromEntries(
-      mapeamento.map(item => [item.idQuestao, item.idProva])
-    );
-    const idGabarito = await GabaritoRepository.criarGabarito(prova.idProjeto, prova.aluno.ID_aluno)
+      doc.addPage();
+      const mapa = Object.fromEntries(
+        mapeamento.map(item => [item.idQuestao, item.idProva])
+      );
+      const idGabarito = await GabaritoRepository.criarGabarito(prova.idProjeto, prova.aluno.ID_aluno)
 
-    // 🔹 Âncoras visuais
-    this.desenharAncoras(doc);
+      // 🔹 Âncoras visuais
+      this.desenharAncoras(doc);
 
-    doc.moveDown(2);
-    doc.fontSize(14).font('Helvetica-Bold')
-      .text('CARTÃO-RESPOSTA', { align: 'left' });
+      doc.moveDown(2);
+      doc.fontSize(14).font('Helvetica-Bold')
+        .text('CARTÃO-RESPOSTA', { align: 'left' });
 
-    doc.moveDown(1);
-    let page = 1;
-    await this.desenharQR(doc, prova, page, idGabarito);
+      doc.moveDown(1);
+      let page = 1;
+      await this.desenharQR(doc, prova, page, idGabarito);
 
-    let mapeamentoPaginas = {};
-    let posicaoQuestoes = [];
+      let mapeamentoPaginas = {};
+      let posicaoQuestoes = [];
 
-    // ============================
-    // QUESTÕES OBJETIVAS
-    // ============================
-    doc.font('Helvetica-Bold').text('QUESTÕES OBJETIVAS');
-    doc.moveDown(0.5);
-    doc.font('Helvetica');
+      // ============================
+      // QUESTÕES OBJETIVAS
+      // ============================
+      doc.font('Helvetica-Bold').text('QUESTÕES OBJETIVAS');
+      doc.moveDown(0.5);
+      doc.font('Helvetica');
 
-    const questoesObj = prova.questoes.filter(q => q.tipo === 'objetiva');
-    
-
-    let xInicial = 60;
-    let yInicial = doc.y;
-    let x = xInicial;
-    let y = yInicial;
-
-    const larguraColuna = 64;
-    const alturaLinha = 22;
-
-    for (const q of questoesObj) {
-      // quebra de coluna
-      if (x + larguraColuna > doc.page.width - 60) {
-        x = xInicial;
-        y += (q.respostas.length + 1) * alturaLinha + 10;
-      }
+      const questoesObj = prova.questoes.filter(q => q.tipo === 'objetiva');
 
 
-      // quebra de página
-      if (y + (q.respostas.length + 1) * alturaLinha > doc.page.height - 80) {
-        doc.addPage();
-        page++
-        await this.desenharQR(doc, prova, page, idGabarito);
-        this.desenharAncoras(doc);
-        y = 100;
-        x = xInicial;
-      }
+      let xInicial = 60;
+      let yInicial = doc.y;
+      let x = xInicial;
+      let y = yInicial;
 
-      // número da questão
-      doc.rect(x, y, 38, 18).stroke();
-      doc.text(`${mapa[q.id]}`, x, y + 4, { width: 38, align: 'center' });
-      (mapeamentoPaginas[page] ??= []).push(q.id);
+      const larguraColuna = 64;
+      const alturaLinha = 22;
 
-      let yOp = y + 24;
-
-      ['A', 'B', 'C', 'D', 'E']
-        .slice(0, q.respostas.length)
-        .forEach(op => {
-          doc.circle(x + 10, yOp + 6, 6).stroke();
-          posicaoQuestoes.push(this.pegarCoordenada(q.id, x + 10, yOp + 6))
-          doc.text(op, x + 24, yOp);
-          yOp += alturaLinha;
-        });
-
-      x += larguraColuna;
-    }
-
-    // ============================
-    // QUESTÕES ASSOCIATIVAS
-    // ============================
-    doc.addPage();
-    page++
-    this.desenharAncoras(doc);
-    await this.desenharQR(doc, prova, page, idGabarito);
-
-    doc.font('Helvetica-Bold')
-      .text('QUESTÕES ASSOCIATIVAS', 60, 80);
-
-    doc.font('Helvetica');
-
-    let yAssoc = 120;
-    const questoesAssoc = prova.questoes.filter(q => q.tipo === 'associativa');
-    let contador = 0;
-    for (const q of questoesAssoc) {
-      doc.text(`Questão ${mapa[q.id]}`, 60, yAssoc - 20);
-      (mapeamentoPaginas[page] ??= []).push(q.id);
-
-      let xAssoc = 60;
-      let sub = 1;
-
-      for (const _ of Object.keys(q.respostas)) {
-        doc.text(`${mapa[q.id]}.${sub}`, xAssoc, yAssoc);
-
-        let yBolha = yAssoc + 14;
-        ['A', 'B', 'C', 'D'].forEach(op => {
-          doc.circle(xAssoc + 10, yBolha + 6, 6).stroke();
-          posicaoQuestoes.push(this.pegarCoordenada(q.id, xAssoc + 10, yBolha + 6))
-          doc.text(op, xAssoc + 24, yBolha);
-          yBolha += 20;
-        });
-
-        xAssoc += 80;
-        sub++;
-      }
-
-      yAssoc += 120;
-      contador++
-      if (yAssoc > doc.page.height - 100 && contador < questoesAssoc.length) {
-        doc.addPage();
-        page++
-        await this.desenharQR(doc, prova, page, idGabarito);
-        this.desenharAncoras(doc);
-        yAssoc = 120;
-      }
-    }
-    await GabaritoRepository.associarGabarito(idGabarito, mapa, mapeamentoPaginas, posicaoQuestoes, prova.questoes, respostasEsperadas, alternativasIds)
-    // await provaRepository.associarPaginaGabarito(mapeamentoPaginas, mapa, prova.idProjeto)
-        } else {
-    const mapa = Object.fromEntries(
-      mapeamento.map(item => [item.idQuestao, item.idProva])
-    );
-    const idGabarito = await GabaritoRepository.criarGabarito(prova.idProjeto, prova.aluno.ID_aluno)
-
-    let page = 1;
-
-
-    let mapeamentoPaginas = {};
-    let posicaoQuestoes = [];
-
-    // ============================
-    // QUESTÕES OBJETIVAS
-    // ============================
-
-    const questoesObj = prova.questoes.filter(q => q.tipo === 'objetiva');
-    
-
-    let xInicial = 60;
-    let yInicial = doc.y;
-    let x = xInicial;
-    let y = yInicial;
-
-    const larguraColuna = 64;
-    const alturaLinha = 22;
-
-    for (const q of questoesObj) {
-      // quebra de coluna
-      if (x + larguraColuna > doc.page.width - 60) {
-        x = xInicial;
-        y += (q.respostas.length + 1) * alturaLinha + 10;
-      }
-
-
-      // quebra de página
-      if (y + (q.respostas.length + 1) * alturaLinha > doc.page.height - 80) {
-        page++
-        y = 100;
-        x = xInicial;
-      }
-
-      // número da questão
-      (mapeamentoPaginas[page] ??= []).push(q.id);
-
-      let yOp = y + 24;
-
-      ['A', 'B', 'C', 'D', 'E']
-        .slice(0, q.respostas.length)
-        .forEach(op => {
-          posicaoQuestoes.push(this.pegarCoordenada(q.id, x + 10, yOp + 6))
-          yOp += alturaLinha;
-        });
-
-      x += larguraColuna;
-    }
-
-    // ============================
-    // QUESTÕES ASSOCIATIVAS
-    // ============================
-    page++
-
-    let yAssoc = 120;
-    const questoesAssoc = prova.questoes.filter(q => q.tipo === 'associativa');
-    let contador = 0;
-    for (const q of questoesAssoc) {
-      (mapeamentoPaginas[page] ??= []).push(q.id);
-
-      let xAssoc = 60;
-      let sub = 1;
-
-      for (const _ of Object.keys(q.respostas)) {
-
-        let yBolha = yAssoc + 14;
-        ['A', 'B', 'C', 'D'].forEach(op => {
-          posicaoQuestoes.push(this.pegarCoordenada(q.id, xAssoc + 10, yBolha + 6))
-          yBolha += 20;
-        });
-
-        xAssoc += 80;
-        sub++;
-      }
-
-      yAssoc += 120;
-      contador++
-      if (yAssoc > doc.page.height - 100 && contador < questoesAssoc.length) {
-        page++
-        yAssoc = 120;
-      }
-    }
-    await GabaritoRepository.associarGabarito(idGabarito, mapa, mapeamentoPaginas, posicaoQuestoes, prova.questoes, respostasEsperadas, alternativasIds)
+      for (const q of questoesObj) {
+        // quebra de coluna
+        if (x + larguraColuna > doc.page.width - 60) {
+          x = xInicial;
+          y += (q.respostas.length + 1) * alturaLinha + 10;
         }
+
+
+        // quebra de página
+        if (y + (q.respostas.length + 1) * alturaLinha > doc.page.height - 80) {
+          doc.addPage();
+          page++
+          await this.desenharQR(doc, prova, page, idGabarito);
+          this.desenharAncoras(doc);
+          y = 100;
+          x = xInicial;
+        }
+
+        // número da questão
+        doc.rect(x, y, 38, 18).stroke();
+        doc.text(`${mapa[q.id]}`, x, y + 4, { width: 38, align: 'center' });
+        (mapeamentoPaginas[page] ??= []).push(q.id);
+
+        let yOp = y + 24;
+
+        ['A', 'B', 'C', 'D', 'E']
+          .slice(0, q.respostas.length)
+          .forEach(op => {
+            doc.circle(x + 10, yOp + 6, 6).stroke();
+            posicaoQuestoes.push(this.pegarCoordenada(q.id, x + 10, yOp + 6))
+            doc.text(op, x + 24, yOp);
+            yOp += alturaLinha;
+          });
+
+        x += larguraColuna;
+      }
+
+      // ============================
+      // QUESTÕES ASSOCIATIVAS
+      // ============================
+      doc.addPage();
+      page++
+      this.desenharAncoras(doc);
+      await this.desenharQR(doc, prova, page, idGabarito);
+
+      doc.font('Helvetica-Bold')
+        .text('QUESTÕES ASSOCIATIVAS', 60, 80);
+
+      doc.font('Helvetica');
+
+      let yAssoc = 120;
+      const questoesAssoc = prova.questoes.filter(q => q.tipo === 'associativa');
+      let contador = 0;
+      for (const q of questoesAssoc) {
+        doc.text(`Questão ${mapa[q.id]}`, 60, yAssoc - 20);
+        (mapeamentoPaginas[page] ??= []).push(q.id);
+
+        let xAssoc = 60;
+        let sub = 1;
+
+        for (const _ of Object.keys(q.respostas)) {
+          doc.text(`${mapa[q.id]}.${sub}`, xAssoc, yAssoc);
+
+          let yBolha = yAssoc + 14;
+          ['A', 'B', 'C', 'D'].forEach(op => {
+            doc.circle(xAssoc + 10, yBolha + 6, 6).stroke();
+            posicaoQuestoes.push(this.pegarCoordenada(q.id, xAssoc + 10, yBolha + 6))
+            doc.text(op, xAssoc + 24, yBolha);
+            yBolha += 20;
+          });
+
+          xAssoc += 80;
+          sub++;
+        }
+
+        yAssoc += 120;
+        contador++
+        if (yAssoc > doc.page.height - 100 && contador < questoesAssoc.length) {
+          doc.addPage();
+          page++
+          await this.desenharQR(doc, prova, page, idGabarito);
+          this.desenharAncoras(doc);
+          yAssoc = 120;
+        }
+      }
+      await GabaritoRepository.associarGabarito(idGabarito, mapa, mapeamentoPaginas, posicaoQuestoes, prova.questoes, respostasEsperadas, alternativasIds)
+      // await provaRepository.associarPaginaGabarito(mapeamentoPaginas, mapa, prova.idProjeto)
+    } else {
+      const mapa = Object.fromEntries(
+        mapeamento.map(item => [item.idQuestao, item.idProva])
+      );
+      const idGabarito = await GabaritoRepository.criarGabarito(prova.idProjeto, prova.aluno.ID_aluno)
+
+      let page = 1;
+
+
+      let mapeamentoPaginas = {};
+      let posicaoQuestoes = [];
+
+      // ============================
+      // QUESTÕES OBJETIVAS
+      // ============================
+
+      const questoesObj = prova.questoes.filter(q => q.tipo === 'objetiva');
+
+
+      let xInicial = 60;
+      let yInicial = doc.y;
+      let x = xInicial;
+      let y = yInicial;
+
+      const larguraColuna = 64;
+      const alturaLinha = 22;
+
+      for (const q of questoesObj) {
+        // quebra de coluna
+        if (x + larguraColuna > doc.page.width - 60) {
+          x = xInicial;
+          y += (q.respostas.length + 1) * alturaLinha + 10;
+        }
+
+
+        // quebra de página
+        if (y + (q.respostas.length + 1) * alturaLinha > doc.page.height - 80) {
+          page++
+          y = 100;
+          x = xInicial;
+        }
+
+        // número da questão
+        (mapeamentoPaginas[page] ??= []).push(q.id);
+
+        let yOp = y + 24;
+
+        ['A', 'B', 'C', 'D', 'E']
+          .slice(0, q.respostas.length)
+          .forEach(op => {
+            posicaoQuestoes.push(this.pegarCoordenada(q.id, x + 10, yOp + 6))
+            yOp += alturaLinha;
+          });
+
+        x += larguraColuna;
+      }
+
+      // ============================
+      // QUESTÕES ASSOCIATIVAS
+      // ============================
+      page++
+
+      let yAssoc = 120;
+      const questoesAssoc = prova.questoes.filter(q => q.tipo === 'associativa');
+      let contador = 0;
+      for (const q of questoesAssoc) {
+        (mapeamentoPaginas[page] ??= []).push(q.id);
+
+        let xAssoc = 60;
+        let sub = 1;
+
+        for (const _ of Object.keys(q.respostas)) {
+
+          let yBolha = yAssoc + 14;
+          ['A', 'B', 'C', 'D'].forEach(op => {
+            posicaoQuestoes.push(this.pegarCoordenada(q.id, xAssoc + 10, yBolha + 6))
+            yBolha += 20;
+          });
+
+          xAssoc += 80;
+          sub++;
+        }
+
+        yAssoc += 120;
+        contador++
+        if (yAssoc > doc.page.height - 100 && contador < questoesAssoc.length) {
+          page++
+          yAssoc = 120;
+        }
+      }
+      await GabaritoRepository.associarGabarito(idGabarito, mapa, mapeamentoPaginas, posicaoQuestoes, prova.questoes, respostasEsperadas, alternativasIds)
+    }
   }
   pegarCoordenada(id, x, y) {
     const obj = {};
