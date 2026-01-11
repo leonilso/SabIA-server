@@ -42,6 +42,8 @@ app.use(cors({
   origin: process.env.FRONT_URL
 }));
 
+app.set('trust proxy', 1);
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -52,7 +54,7 @@ const limiter = rateLimit({
 // Aplica o rate limiter para todas as rotas
 app.use(limiter);
 
-app.disable('x-powered-by');
+// app.disable('x-powered-by');
 
 // app.use((req, res, next) => {
 //   res.setHeader(
@@ -70,9 +72,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 6. Rota "Health Check" (Boa prática)
 // Uma rota simples para verificar se a API está online
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'API Gerador de Provas no ar!' });
-});
+// app.get('/', (req, res) => {
+//   res.status(200).json({ status: 'ok', message: 'API Gerador de Provas no ar!' });
+// });
 
 // 7. Registro das Rotas da Aplicação
 // Todas as rotas de provas serão prefixadas com /api/provas
